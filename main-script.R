@@ -428,3 +428,18 @@ for(yyear in 2016:2018){
 }
 
 rm(list = ls())
+###########################################################
+## Part 6: Solve the additional Macro Energy Model cases ##
+###########################################################
+setwd('MEM')
+
+# make sure we are using the correct version of python
+Sys.setenv(PATH = paste("/anaconda3/bin", Sys.getenv("PATH"), sep=":"))
+
+# run the regional grids
+system("sh run_MEM_for_regional_grids_batch_2.sh")
+
+# run the global grid
+system("sh run_MEM_for_global_grid_batch_2.sh")
+
+setwd('~/Google Drive/2021-global-grid')
