@@ -169,4 +169,262 @@ system('sh run_MEM_for_global_grid.sh')
 # change thet working directory back out of the MEM directory
 setwd('~/Google Drive/2021-global-grid')
 
+###########################################################
+## Part 5: Prepare other Macro Energy Model input sheets ##
+###########################################################
+
+# (3) Same as (1) but with storage costs being 1/10th the cost of baseline
+source('R/case-input-setup-separate-regional-grids.R')
+
+load(file = 'data/MEM_inputs.RData')
+
+# we need to do this in batches of 5 regions at a time for computatioin reasons
+parts = list(c(1:5),
+             c(6:10),
+             c(11:15),
+             c(16:20),
+             c(21:25),
+             c(26))
+
+for(ppart in 1:6){
+  for(yyear in 2016:2018){
+    MEM_case_input_setup_separate_regional_grids(
+      year = yyear,
+      delta_t = 3,
+      save_file_name = paste0('MEM/case_inputs/regional_grids/regional_grids_separate_one_tenth_cost_storage_part_',
+                              ppart,'_',yyear,'.csv'),
+      data_path = 'Input_Data',
+      output_path = paste0('Output_Data/regional_grids/separate_one_tenth_cost_storage_part_',ppart),
+      demand_regions = parts[[ppart]],
+      wind_regions = parts[[ppart]],
+      solar_regions = parts[[ppart]],
+      curtailment_regions = parts[[ppart]],
+      lost_load_regions = parts[[ppart]],
+      storage_regions = parts[[ppart]],
+      storage_efficiency = MEM_inputs$efficiency[MEM_inputs$Tech == 'Storage'] / 100,
+      storage_decay_rate = MEM_inputs$decay_rate[MEM_inputs$Tech == 'Storage'],
+      storage_charging_time = MEM_inputs$charge_time[MEM_inputs$Tech == 'Storage'],
+      solar_fixed_cost = MEM_inputs$capacity_fixed_cost_per_kW[MEM_inputs$Tech == 'Solar'],
+      wind_fixed_cost = MEM_inputs$capacity_fixed_cost_per_kW[MEM_inputs$Tech == 'Wind'],
+      storage_fixed_cost = MEM_inputs$capacity_fixed_cost_per_kWh[MEM_inputs$Tech == 'Storage (1/10th cap cost)'],
+      lost_load_var_cost = 10
+    )
+  }
+}
+
+
+# (4) Same as (2) but with storage costs being 1/10th the cost of baseline
+source('R/find-top-n-demand-regions.R')
+top_five_demand_regions =
+  find_top_n_demand_regions(
+    n_sites = 5,
+    demand_file = 'data/SREX_demand_weightings.csv')
+
+source('R/case-input-setup-connected-global-grid.R')
+
+for(yyear in 2016:2018){
+  MEM_case_input_setup_connected_global_grid(
+    year = yyear,
+    delta_t = 3,
+    save_file_name = paste0('MEM/case_inputs/global_grid/global_grid_connected_five_one_tenth_cost_storage_',
+                            yyear,'.csv'),
+    data_path = 'Input_Data',
+    output_path = 'Output_Data/global_grid/connected_five_one_tenth_cost_storage',
+    demand_regions = 1:26,
+    wind_regions = 1:26,
+    solar_regions = 1:26,
+    curtailment_regions = 1:26,
+    lost_load_regions = 1:26,
+    storage_regions = top_five_demand_regions$top_demand,
+    storage_efficiency = MEM_inputs$efficiency[MEM_inputs$Tech == 'Storage'] / 100,
+    storage_decay_rate = MEM_inputs$decay_rate[MEM_inputs$Tech == 'Storage'],
+    storage_charging_time = MEM_inputs$charge_time[MEM_inputs$Tech == 'Storage'],
+    solar_fixed_cost = MEM_inputs$capacity_fixed_cost_per_kW[MEM_inputs$Tech == 'Solar'],
+    wind_fixed_cost = MEM_inputs$capacity_fixed_cost_per_kW[MEM_inputs$Tech == 'Wind'],
+    storage_fixed_cost = MEM_inputs$capacity_fixed_cost_per_kWh[MEM_inputs$Tech == 'Storage (1/10th cap cost)'],
+    lost_load_var_cost = 10,
+    line_loss = MEM_inputs$loss_percent_per_km[MEM_inputs$Tech == 'Trans line (land)'] / 100,
+    converter_pair_loss = MEM_inputs$loss_percent[MEM_inputs$Tech == 'Trans converter pair'] / 100,
+    line_cost_land = MEM_inputs$capacity_fixed_cost_per_kW_per_km[MEM_inputs$Tech == 'Trans line (land)'],
+    line_cost_sea = MEM_inputs$capacity_fixed_cost_per_kW_per_km[MEM_inputs$Tech == 'Trans line (sea)'],
+    converter_pair_cost = MEM_inputs$capacity_fixed_cost_per_kW[MEM_inputs$Tech == 'Trans converter pair']
+  )
+}
+
+
+# (5) Same as (1) but with storage costs being 100 $/kWh the cost of baseline
+
+for(ppart in 1:6){
+  for(yyear in 2016:2018){
+    MEM_case_input_setup_separate_regional_grids(
+      year = yyear,
+      delta_t = 3,
+      save_file_name = paste0('MEM/case_inputs/regional_grids/regional_grids_separate_one_hundred_cost_storage_part_',
+                              ppart,'_',yyear,'.csv'),
+      data_path = 'Input_Data',
+      output_path = paste0('Output_Data/regional_grids/separate_one_hundred_cost_storage_part_',ppart),
+      demand_regions = parts[[ppart]],
+      wind_regions = parts[[ppart]],
+      solar_regions = parts[[ppart]],
+      curtailment_regions = parts[[ppart]],
+      lost_load_regions = parts[[ppart]],
+      storage_regions = parts[[ppart]],
+      storage_efficiency = MEM_inputs$efficiency[MEM_inputs$Tech == 'Storage'] / 100,
+      storage_decay_rate = MEM_inputs$decay_rate[MEM_inputs$Tech == 'Storage'],
+      storage_charging_time = MEM_inputs$charge_time[MEM_inputs$Tech == 'Storage'],
+      solar_fixed_cost = MEM_inputs$capacity_fixed_cost_per_kW[MEM_inputs$Tech == 'Solar'],
+      wind_fixed_cost = MEM_inputs$capacity_fixed_cost_per_kW[MEM_inputs$Tech == 'Wind'],
+      storage_fixed_cost = MEM_inputs$capacity_fixed_cost_per_kWh[MEM_inputs$Tech == 'Storage ($100 per kWh)'],
+      lost_load_var_cost = 10
+    )
+  }
+}
+
+# (6) Same as (2) but with storage costs being 100 $/kWh the cost of baseline
+
+for(yyear in 2016:2018){
+  MEM_case_input_setup_connected_global_grid(
+    year = yyear,
+    delta_t = 3,
+    save_file_name = paste0('MEM/case_inputs/global_grid/global_grid_connected_five_one_hundred_cost_storage_',
+                            yyear,'.csv'),
+    data_path = 'Input_Data',
+    output_path = 'Output_Data/global_grid/connected_five_one_hundred_cost_storage',
+    demand_regions = 1:26,
+    wind_regions = 1:26,
+    solar_regions = 1:26,
+    curtailment_regions = 1:26,
+    lost_load_regions = 1:26,
+    storage_regions = top_five_demand_regions$top_demand,
+    storage_efficiency = MEM_inputs$efficiency[MEM_inputs$Tech == 'Storage'] / 100,
+    storage_decay_rate = MEM_inputs$decay_rate[MEM_inputs$Tech == 'Storage'],
+    storage_charging_time = MEM_inputs$charge_time[MEM_inputs$Tech == 'Storage'],
+    solar_fixed_cost = MEM_inputs$capacity_fixed_cost_per_kW[MEM_inputs$Tech == 'Solar'],
+    wind_fixed_cost = MEM_inputs$capacity_fixed_cost_per_kW[MEM_inputs$Tech == 'Wind'],
+    storage_fixed_cost = MEM_inputs$capacity_fixed_cost_per_kWh[MEM_inputs$Tech == 'Storage ($100 per kWh)'],
+    lost_load_var_cost = 10,
+    line_loss = MEM_inputs$loss_percent_per_km[MEM_inputs$Tech == 'Trans line (land)'] / 100,
+    converter_pair_loss = MEM_inputs$loss_percent[MEM_inputs$Tech == 'Trans converter pair'] / 100,
+    line_cost_land = MEM_inputs$capacity_fixed_cost_per_kW_per_km[MEM_inputs$Tech == 'Trans line (land)'],
+    line_cost_sea = MEM_inputs$capacity_fixed_cost_per_kW_per_km[MEM_inputs$Tech == 'Trans line (sea)'],
+    converter_pair_cost = MEM_inputs$capacity_fixed_cost_per_kW[MEM_inputs$Tech == 'Trans converter pair']
+  )
+}
+
+# (7) Same as (2) but remove the top 5 energy density regions for each wind and solar
+source('R/find-top-n-wind-solar-energy-density-regions.R')
+
+top_five_regions = list('2016' = NA,
+                        '2017' = NA,
+                        '2018' = NA)
+
+top_five_regions[['2016']] =
+  find_top_n_wind_solar_energy_density_regions(
+    year = 2016,
+    n_sites = 5,
+    solar_file = 'data/capacity_factors_wind_solar/SREXs_capacity.csv',
+    wind_file = 'data/capacity_factors_wind_solar/SREXw_capacity.csv')
+
+top_five_regions[['2017']] =
+  find_top_n_wind_solar_energy_density_regions(
+    year = 2017,
+    n_sites = 5,
+    solar_file = 'data/capacity_factors_wind_solar/SREXs_capacity.csv',
+    wind_file = 'data/capacity_factors_wind_solar/SREXw_capacity.csv')
+
+top_five_regions[['2018']] =
+  find_top_n_wind_solar_energy_density_regions(
+    year = 2018,
+    n_sites = 5,
+    solar_file = 'data/capacity_factors_wind_solar/SREXs_capacity.csv',
+    wind_file = 'data/capacity_factors_wind_solar/SREXw_capacity.csv')
+
+for(yyear in 2016:2018){
+  MEM_case_input_setup_connected_global_grid(
+    year = yyear,
+    delta_t = 3,
+    save_file_name = paste0('MEM/case_inputs/global_grid/global_grid_connected_five_storage_exclude_top_5_wind_and_top_5_solar_density_',
+                            yyear,'.csv'),
+    data_path = 'Input_Data',
+    output_path = 'Output_Data/global_grid/connected_five_storage_exclude_top_5_wind_and_top_5_solar_density',
+    demand_regions = 1:26,
+    wind_regions = vecsets::vsetdiff(1:26, top_five_regions[[as.character(yyear)]]$top_wind),
+    solar_regions = vecsets::vsetdiff(1:26, top_five_regions[[as.character(yyear)]]$top_solar),
+    curtailment_regions = 1:26,
+    lost_load_regions = 1:26,
+    storage_regions = top_five_demand_regions$top_demand,
+    storage_efficiency = MEM_inputs$efficiency[MEM_inputs$Tech == 'Storage'] / 100,
+    storage_decay_rate = MEM_inputs$decay_rate[MEM_inputs$Tech == 'Storage'],
+    storage_charging_time = MEM_inputs$charge_time[MEM_inputs$Tech == 'Storage'],
+    solar_fixed_cost = MEM_inputs$capacity_fixed_cost_per_kW[MEM_inputs$Tech == 'Solar'],
+    wind_fixed_cost = MEM_inputs$capacity_fixed_cost_per_kW[MEM_inputs$Tech == 'Wind'],
+    storage_fixed_cost = MEM_inputs$capacity_fixed_cost_per_kWh[MEM_inputs$Tech == 'Storage'],
+    lost_load_var_cost = 10,
+    line_loss = MEM_inputs$loss_percent_per_km[MEM_inputs$Tech == 'Trans line (land)'] / 100,
+    converter_pair_loss = MEM_inputs$loss_percent[MEM_inputs$Tech == 'Trans converter pair'] / 100,
+    line_cost_land = MEM_inputs$capacity_fixed_cost_per_kW_per_km[MEM_inputs$Tech == 'Trans line (land)'],
+    line_cost_sea = MEM_inputs$capacity_fixed_cost_per_kW_per_km[MEM_inputs$Tech == 'Trans line (sea)'],
+    converter_pair_cost = MEM_inputs$capacity_fixed_cost_per_kW[MEM_inputs$Tech == 'Trans converter pair']
+  )
+}
+rm('top_five_regions')
+# (6) Same as (2) but remove the top 5 energy generating regions for each wind and solar
+# NOTE: You need to have run MEM on the baseline connectted scenarios before you can successfully run the lines below 
+
+source('R/find-top-n-wind-solar-energy-generating-regions.R')
+top_five_regions = list('2016' = NA,
+                        '2017' = NA,
+                        '2018' = NA)
+
+top_five_regions[['2016']] =
+  find_top_n_wind_solar_energy_generating_regions(
+    n_sites = 5,
+    MEM_output_file = list.files("MEM/Output_Data/global_grid/connected_five_storage/global_grid_2016/",
+                                 pattern = '.xlsx',
+                                 full.names = TRUE))
+
+top_five_regions[['2017']] =
+  find_top_n_wind_solar_energy_generating_regions(
+    n_sites = 5,
+    MEM_output_file = list.files("MEM/Output_Data/global_grid/connected_five_storage/global_grid_2017/",
+                                 pattern = '.xlsx',
+                                 full.names = TRUE))
+
+top_five_regions[['2018']] =
+  find_top_n_wind_solar_energy_generating_regions(
+    n_sites = 5,
+    MEM_output_file = list.files("MEM/Output_Data/global_grid/connected_five_storage/global_grid_2018/",
+                                 pattern = '.xlsx',
+                                 full.names = TRUE))
+
+
+for(yyear in 2016:2018){
+  MEM_case_input_setup_connected_global_grid(
+    year = yyear,
+    delta_t = 3,
+    save_file_name = paste0('MEM/case_inputs/global_grid/global_grid_connected_five_storage_exclude_top_5_wind_and_top_5_solar_generating_',
+                            yyear,'.csv'),
+    data_path = 'Input_Data',
+    output_path = 'Output_Data/global_grid/connected_five_storage_exclude_top_5_wind_and_top_5_solar_generating',
+    demand_regions = 1:26,
+    wind_regions = vecsets::vsetdiff(1:26, top_five_regions[[as.character(yyear)]]$top_wind),
+    solar_regions = vecsets::vsetdiff(1:26, top_five_regions[[as.character(yyear)]]$top_solar),
+    curtailment_regions = 1:26,
+    lost_load_regions = 1:26,
+    storage_regions = top_five_demand_regions$top_demand,
+    storage_efficiency = MEM_inputs$efficiency[MEM_inputs$Tech == 'Storage'] / 100,
+    storage_decay_rate = MEM_inputs$decay_rate[MEM_inputs$Tech == 'Storage'],
+    storage_charging_time = MEM_inputs$charge_time[MEM_inputs$Tech == 'Storage'],
+    solar_fixed_cost = MEM_inputs$capacity_fixed_cost_per_kW[MEM_inputs$Tech == 'Solar'],
+    wind_fixed_cost = MEM_inputs$capacity_fixed_cost_per_kW[MEM_inputs$Tech == 'Wind'],
+    storage_fixed_cost = MEM_inputs$capacity_fixed_cost_per_kWh[MEM_inputs$Tech == 'Storage'],
+    lost_load_var_cost = 10,
+    line_loss = MEM_inputs$loss_percent_per_km[MEM_inputs$Tech == 'Trans line (land)'] / 100,
+    converter_pair_loss = MEM_inputs$loss_percent[MEM_inputs$Tech == 'Trans converter pair'] / 100,
+    line_cost_land = MEM_inputs$capacity_fixed_cost_per_kW_per_km[MEM_inputs$Tech == 'Trans line (land)'],
+    line_cost_sea = MEM_inputs$capacity_fixed_cost_per_kW_per_km[MEM_inputs$Tech == 'Trans line (sea)'],
+    converter_pair_cost = MEM_inputs$capacity_fixed_cost_per_kW[MEM_inputs$Tech == 'Trans converter pair']
+  )
+}
+
 rm(list = ls())
