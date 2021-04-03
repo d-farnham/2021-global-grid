@@ -1,0 +1,27 @@
+Index,SREX regions,Full name,Hour bias relative to SREX 5 (ENA),S. hemisphere
+1,ALA,Alaska/N.W.Canada,-4,0
+2,CGI,Canada/Greenalnd/Iceland,1,0
+3,WNA,West North America,-3,0
+4,CNA,Central North America,-2,0
+5,ENA,East North America,0,0
+6,CAM,Central America/Mexico,-1,0
+7,AMZ,Amazon,1,1
+8,NEB,North-East Brazil,2,1
+9,WSA,West Coast South America,0,1
+10,SSA,Southeastern South America,1,1
+11,NEU,North Europe,6,0
+12,CEU,Central Europe,6,0
+13,MED,South Europe/Mediterranean,6,0
+14,SAH,Sahara,6,0
+15,WAF,West Africa,5,0
+16,EAF,East Africa,7,0
+17,SAF,Southern Africa,6,1
+18,NAS,North Asia,12,0
+19,WAS,West Asia,8,0
+20,CAS,Central Asia,9,0
+21,TIB,Tibeatn Plateau,11,0
+22,EAS,East Asia,13,0
+23,SAS,South Asia,10,0
+24,SEA,Southeast Asia,13,0
+25,NAU,North Australia,14,1
+26,SAU,South Asustralia/New Zealand,14,1
