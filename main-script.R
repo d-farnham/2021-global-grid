@@ -4,9 +4,10 @@
 
 rm(list = ls())
 package.list = list('dplyr', 'plyr', 'rgdal', 'ggplot2', 'maptools', 'rgeos', 'cowplot', 
-                    'readr', 'gt', 'lubridate', 'readxl', 'tidyr', 'data.table')
+                    'readr', 'gt', 'lubridate', 'readxl', 'tidyr', 'data.table', 'stringr',
+                    'tibble', 'igraph', 'ggrepel')
 source('R/load-packages.R') # load packages
-#webshot::install_phantomjs()
+webshot::install_phantomjs()
 
 ###########################################################
 ## Part 1: Define and plot the regions and proposed grid ##
@@ -112,7 +113,7 @@ for(ppart in 1:6){
 source('R/find-top-n-demand-regions.R')
 top_five_demand_regions =
   find_top_n_demand_regions(
-    n_sites = 5,
+    n_sites = 10,
     demand_file = 'data/SREX_demand_weightings.csv')
 
 source('R/case-input-setup-connected-global-grid.R')
@@ -443,3 +444,119 @@ system("sh run_MEM_for_regional_grids_batch_2.sh")
 system("sh run_MEM_for_global_grid_batch_2.sh")
 
 setwd('~/Google Drive/2021-global-grid')
+
+
+###########################################################
+### Part 7: Process and plot Macro Energy Model outputs ###
+###########################################################
+
+# define our color palette
+my_colors = data.frame(color = c('green', 'brown', 'black', 'pink', 'gray', 'orange'),
+                       value = c('#f16913', '#8c2d04', 'black', '#e7298a', 'gray', '#238b45'))
+
+# Plot the cost and capacities (Figure 2)
+source('R/plot-cost-capacity.R')
+plot_cost_capacity(year = 2018,
+                   gg_output_file = 'connected_five_storage/global_grid_',
+                   rg_output_file = 'separate_part_')
+
+plot_cost_capacity(year = 2017,
+                   gg_output_file = 'connected_five_storage/global_grid_',
+                   rg_output_file = 'separate_part_')
+
+plot_cost_capacity(year = 2016,
+                   gg_output_file = 'connected_five_storage/global_grid_',
+                   rg_output_file = 'separate_part_')
+
+# !!! ADD BACK IN THE TABLES ABOVE!
+
+# Plot the capacities and import (Figure 3)
+source('R/plot-gen-capacity-import.R')
+plot_wind_solar_capacity_import(year = 2018,
+                                gg_output_file = 'connected_five_storage/global_grid_')
+
+plot_wind_solar_capacity_import(year = 2017,
+                                gg_output_file = "connected_five_storage/global_grid_")
+
+plot_wind_solar_capacity_import(year = 2016,
+                                gg_output_file = "connected_five_storage/global_grid_")
+
+
+# plot the mean transmission and import/export during various UTC times for a week in June vs. a week in December (Figure 4)
+# !!! NEED TO a) REMOVE LABELS, 
+# !!! e) add panel letter labels
+source('R/plot-power-flows.R')
+plot_power_flows(year = 2018,
+                 gg_output_file = 'connected_five_storage/global_grid_',
+                 hour_a = 4.5,
+                 hour_b = 13.5,
+                 hour_c = 22.5,
+                 date_a = as.POSIXct('2018-12-21', tz = 'UTC'),
+                 date_b = as.POSIXct('2018-06-21', tz = 'UTC'))
+
+plot_power_flows(year = 2017,
+                 gg_output_file = 'connected_five_storage/global_grid_',
+                 hour_a = 4.5,
+                 hour_b = 13.5,
+                 hour_c = 22.5,
+                 date_a = as.POSIXct('2017-12-21', tz = 'UTC'),
+                 date_b = as.POSIXct('2017-06-21', tz = 'UTC'))
+
+plot_power_flows(year = 2016,
+                 gg_output_file = 'connected_five_storage/global_grid_',
+                 hour_a = 4.5,
+                 hour_b = 13.5,
+                 hour_c = 22.5,
+                 date_a = as.POSIXct('2016-12-21', tz = 'UTC'),
+                 date_b = as.POSIXct('2016-06-21', tz = 'UTC'))
+
+
+# plot the costs of alternative scenarios (Figure 5)
+source('R/plot-costs-alternative-scenarios.R')
+plot_costs_alternative_scenarios(
+  years = c(2016:2018),
+  global_grid_run_ID = 'connected_five_storage',
+  storage_100_global_grid_run_ID = 'connected_five_one_hundred_cost_storage',
+  storage_1_10th_global_grid_run_ID = 'connected_five_one_tenth_cost_storage',
+  exclude_high_density_regions_global_grid_run_ID = 'connected_five_storage_exclude_top_5_wind_and_top_5_solar_density',
+  exclude_high_gen_regions_global_grid_run_ID = 'connected_five_storage_exclude_top_5_wind_and_top_5_solar_generating',
+  regional_grids_run_ID = 'separate',
+  storage_100_regional_grids_run_ID = 'separate_one_hundred_cost_storage',
+  storage_1_10th_regional_grids_run_ID = 'separate_one_tenth_cost_storage')
+
+
+# plot the capacity factors and MEM installed capacities (SI figure)
+source('R/plot-wind-solar-CFs-capacities.R')
+plot_wind_solar_CFs_capacities(hour_multiple = 3,
+                               years = c(2016:2018),
+                               global_grid_run_ID = 'connected_five_storage')
+
+
+# plot the capacity facotrs and MEM installed capacities (SI figure)
+source('R/plot-wind-solar-CF-demand-cors.R')
+plot_wind_solar_demand_cors(hour_multiple = 3,
+                            years = c(2016:2018),
+                            prototype_SREX_ID = 'ENA')
+
+# plot the correlation of aggregate global demand with wind/solar and installed capacity
+source('R/plot-agg-demand-wind-solar-capacities.R')
+plot_agg_demand_wind_solar_capacities(hour_multiple = 3,
+                                      years = c(2016:2018),
+                                      prototype_SREX_ID = 'ENA',
+                                      global_grid_run_ID = 'connected_five_storage')
+
+# plot the tail dependence between wind/solar gen and demand and installed capacity
+source('R/plot-tail-dep-capacities.R')
+plot_tail_dep_capacities(hour_multiple = 3,
+                         years = c(2016:2018),
+                         prototype_SREX_ID = 'ENA',
+                         global_grid_run_ID = 'connected_five_storage')
+
+# plot the distance to the top 5 demand regions and installed wind/solar capacities
+source('R/plot-dist-to-regions-capacities.R')
+plot_dist_to_regions_capacities(proposed_grid = 'data/proposed_grid_coords.RData',
+                                years = c(2016:2018),
+                                global_grid_run_ID = 'connected_five_storage')
+
+rm(list = ls())
+
