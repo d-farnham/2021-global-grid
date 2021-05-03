@@ -34,7 +34,7 @@ mean_lost_load = read_excel(path = output_path,
   dplyr::mutate(Tech = 'lost_load') %>%
   dplyr::select(node, Tech, dispatch) %>%
   dplyr::group_by(node, Tech) %>%
-  dplyr::summarise(total_dispatch = sum(dispatch))
+  dplyr::summarise(mean_lost_load_dispatch = mean(dispatch))
 
 
 curtailment_lost_load_outputs_gg = mean_curtailment %>% bind_rows(mean_lost_load) %>%
@@ -79,7 +79,7 @@ for(ii in 1:length(output_paths)){
     dplyr::mutate(Tech = 'lost_load') %>%
     dplyr::select(node, Tech, dispatch) %>%
     dplyr::group_by(node, Tech) %>%
-    dplyr::summarise(total_dispatch = sum(dispatch))
+    dplyr::summarise(mean_lost_load_dispatch = mean(dispatch))
   
   
   curtailment_lost_load_outputs_rg0 = mean_curtailment %>% bind_rows(mean_lost_load) %>%

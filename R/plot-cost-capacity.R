@@ -212,7 +212,7 @@ lost_loads_costs = merge(merge(tech_costs_parameters %>% dplyr::filter(Tech %in%
                          time_parameters,
                          by = c('case'),
                          all = TRUE) %>%
-    dplyr::mutate(yearly_cost = as.numeric(total_dispatch) * as.numeric(var_cost) * as.numeric(delta_t)) %>%
+    dplyr::mutate(yearly_cost = as.numeric(mean_lost_load_dispatch) * as.numeric(var_cost) * as.numeric(num_time_periods) * as.numeric(delta_t)) %>%
     dplyr::select(case, node, Tech, yearly_cost)
 
 
@@ -291,7 +291,7 @@ lost_load_mean = merge(time_parameters,
                        curtailment_lostload_outputs %>% dplyr::filter(Tech %in% c('lost_load')),
                                by = c('case'),
                                all = TRUE) %>%
-  dplyr::mutate(mean_unmet_demand = as.numeric(total_dispatch) / as.numeric(num_time_periods) / as.numeric(delta_t)) %>%
+  dplyr::mutate(mean_unmet_demand = as.numeric(mean_lost_load_dispatch)) %>%
   dplyr::select(case, node, Tech, mean_unmet_demand)
 
 # mean gen, storage, lost load, curtailed, and trans
