@@ -329,5 +329,12 @@ trans_table_data %>% gt(auto_align = 'auto') %>%
   gtsave(filename = paste0('table_transmission_stats_', year,'.png'),
          path = 'figs/')
 
+
+print('Largest trans line capacity (GW):')
+print(round(max(trans_capacities$capacity)/1e6,0))
+
+print('Smallest trans line capacity (GW):')
+print(round(min(trans_capacities$capacity)/1e6,0))
+
 rm(list = ls())
 }

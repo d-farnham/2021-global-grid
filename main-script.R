@@ -513,7 +513,7 @@ plot_power_flows(year = 2016,
 
 
 # plot the costs of alternative scenarios (Figure 4)
-source('R/plot-costs-alternative-scenarios-TESTING.R')
+source('R/plot-costs-alternative-scenarios.R')
 plot_costs_alternative_scenarios(
   years = c(2016:2018),
   global_grid_run_ID = 'connected_five_storage',

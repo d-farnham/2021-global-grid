@@ -35,6 +35,8 @@ curtailment_lostload_outputs =
 generation_outputs_summary = generation_outputs %>% dplyr::group_by(Tech, case) %>%
                                                     dplyr::summarise(mean_generation = sum(mean_generation),
                                                                      capacity = sum(capacity))
+
+
 top_gen_lim = 
 generation_outputs_summary %>% dplyr::group_by(case) %>%
                                dplyr::summarise(mean_generation = sum(mean_generation)) %>%
@@ -395,6 +397,19 @@ regional_grids_table_data %>% gt(auto_align = 'auto') %>%
   gtsave(filename = paste0('table_cost_capacity_regional_grids_', year,'.png'),
          path = 'figs/')
 
+
+
+# compute the percent of generation that is not curtailed:
+generation_curtailment = 
+  merge(generation_outputs_summary %>% dplyr::group_by(case) %>%
+                                       dplyr::summarise(mean_generation = sum(mean_generation)),
+        curtailment_lostload_outputs_summary %>% dplyr::filter(Tech == 'curtailment') %>%
+                                                 dplyr::group_by(case) %>%
+                                                 dplyr::summarise(mean_curtailed = sum(mean_dispatch)),
+        by = 'case') %>% dplyr::mutate(percent_curtailed = mean_curtailed/mean_generation * 100)
+
+print('Generation and curtailment stats:')
+print(generation_curtailment)
 
 rm(list = ls())
 }
