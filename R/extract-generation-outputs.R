@@ -1,5 +1,5 @@
 extract_generation_outputs = function(year = 2018,
-                                      gg_output_file = 'connected_five_storage_trans_var_cost/global_grid_',
+                                      gg_output_file = 'connected_five_storage/global_grid_',
                                       rg_output_file = 'separate_part_'){
   
 # let's load the results from the globally connected grid
@@ -28,9 +28,10 @@ wind_solar_mean_generation = read_excel(path = output_path,
   dplyr::select(matches('solar|wind')) %>% 
   dplyr::select(contains('potential')) %>%
   dplyr::mutate(time_index = 1:n()) %>%
-  reshape2::melt(id.vars = 'time_index',
-                 variable.name = 'Name',
-                 value.name = 'generation') %>%
+  data.table() %>%
+  melt(id.vars = 'time_index',
+       variable.name = 'Name',
+       value.name = 'generation') %>%
   tidyr::separate(Name, c('X', 'node', 'Tech'), "_") %>%
   dplyr::mutate(Tech = sub(Tech, pattern = ' potential', replacement = '')) %>%
   dplyr::select(time_index, node, Tech, generation) %>%
@@ -79,9 +80,10 @@ for(ii in 1:length(output_paths)){
     dplyr::select(matches('solar|wind')) %>% 
     dplyr::select(contains('potential')) %>%
     dplyr::mutate(time_index = 1:n()) %>%
-    reshape2::melt(id.vars = 'time_index',
-                   variable.name = 'Name',
-                   value.name = 'generation') %>%
+    data.table() %>%
+    melt(id.vars = 'time_index',
+         variable.name = 'Name',
+         value.name = 'generation') %>%
     tidyr::separate(Name, c('X', 'node', 'Tech'), "_") %>%
     dplyr::mutate(Tech = sub(Tech, pattern = ' potential', replacement = '')) %>%
     dplyr::select(time_index, node, Tech, generation) %>%

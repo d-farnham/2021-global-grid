@@ -1,5 +1,5 @@
 extract_curtailment_lostload_outputs = function(year = 2018,
-                                                gg_output_file = 'connected_five_storage_trans_var_cost/global_grid_',
+                                                gg_output_file = 'connected_five_storage/global_grid_',
                                                 rg_output_file = 'separate_part_'){
   
 # let's load the results from the globally connected grid
@@ -13,8 +13,9 @@ mean_curtailment = read_excel(path = output_path,
                               sheet = "time results",
                               .name_repair = 'minimal') %>%
   dplyr::select(contains('curtailment')) %>%
-  reshape2::melt(variable.name = 'Name',
-                 value.name = 'dispatch') %>%
+  data.table() %>%
+  melt(variable.name = 'Name',
+       value.name = 'dispatch') %>%
   tidyr::separate(Name, c('X', 'node', 'curtailment'), "_") %>%
   dplyr::mutate(Tech = 'curtailment') %>%
   dplyr::select(node, Tech, dispatch) %>%
@@ -26,8 +27,9 @@ mean_lost_load = read_excel(path = output_path,
                             sheet = "time results",
                             .name_repair = 'minimal') %>%
   dplyr::select(contains('lost_load')) %>%
-  reshape2::melt(variable.name = 'Name',
-                 value.name = 'dispatch') %>%
+  data.table() %>%
+  melt(variable.name = 'Name',
+       value.name = 'dispatch') %>%
   tidyr::separate(Name, c('X', 'node', 'lost', 'load'), "_") %>%
   dplyr::mutate(Tech = 'lost_load') %>%
   dplyr::select(node, Tech, dispatch) %>%
@@ -56,8 +58,9 @@ for(ii in 1:length(output_paths)){
                                 sheet = "time results",
                                 .name_repair = 'minimal') %>%
     dplyr::select(contains('curtailment')) %>%
-    reshape2::melt(variable.name = 'Name',
-                   value.name = 'dispatch') %>%
+    data.table() %>%
+    melt(variable.name = 'Name',
+         value.name = 'dispatch') %>%
     tidyr::separate(Name, c('X', 'node', 'curtailment'), "_") %>%
     dplyr::mutate(Tech = 'curtailment') %>%
     dplyr::select(node, Tech, dispatch) %>%
@@ -69,8 +72,9 @@ for(ii in 1:length(output_paths)){
                               sheet = "time results",
                               .name_repair = 'minimal') %>%
     dplyr::select(contains('lost_load')) %>%
-    reshape2::melt(variable.name = 'Name',
-                   value.name = 'dispatch') %>%
+    data.table() %>%
+    melt(variable.name = 'Name',
+         value.name = 'dispatch') %>%
     tidyr::separate(Name, c('X', 'node', 'lost', 'load'), "_") %>%
     dplyr::mutate(Tech = 'lost_load') %>%
     dplyr::select(node, Tech, dispatch) %>%

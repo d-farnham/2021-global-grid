@@ -52,10 +52,10 @@ demand_solar_wind_cors = CF_demand %>% dplyr::filter(year == yyear) %>%
   dplyr::summarise(`solar-demand` = cor(solar_capacity, demand),
                    `wind-demand` = cor(wind_capacity, demand))
 
-demand_solar_wind_cors_long = reshape2::melt(demand_solar_wind_cors, 
-                                             id.vars = 'srex',
-                                             value.name = 'cor',
-                                             variable.name = 'cor_type')
+demand_solar_wind_cors_long = demand_solar_wind_cors %>% data.table() %>%
+                                                          melt(id.vars = 'srex',
+                                                               value.name = 'cor',
+                                                               variable.name = 'cor_type')
 
 wind_solar_demand_cors_plot[[ii]] =
   ggplot(demand_solar_wind_cors_long) +

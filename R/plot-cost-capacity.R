@@ -10,10 +10,10 @@ storage_outputs =
                           rg_output_file)
 
 # extract the transmission results
-source('R/extract-transmission-outputs.R')
-trans_outputs = 
-  extract_trans_outputs(year,
-                        gg_output_file)
+source('R/extract-transmission-dispatch.R')
+trans_dispatch_by_node =
+  extract_trans_dispatch(year = year,
+                         gg_output_file = 'connected_five_storage/global_grid_')
   
 # extract the wind/solar generation results
 source('R/extract-generation-outputs.R')
@@ -72,7 +72,7 @@ curtail_plot =
            stat="identity", 
            width = 0.75,
            size = 0.25) +
-  scale_fill_manual(values = c(as.character(my_colors$value[my_colors$color == 'gray']))) +
+  scale_fill_manual(values = c(as.character(my_colors$value[my_colors$color == 'brown']))) +
   theme_bw() +
   theme(legend.position = '') +
   labs(title = "Curtailment",
@@ -109,20 +109,24 @@ storage_plot =
 
 
 # make the transmission bar plot
-trans_outputs_summary = trans_outputs %>% dplyr::group_by(Tech, case) %>%
-                                          dplyr::summarise(mean_dispatch = sum(mean_dispatch))
+trans_outputs_summary = trans_dispatch_by_node %>% dplyr::mutate(case = 'Global grid') %>%
+                                                   bind_rows(data.frame(case = 'Regional grids')) %>%
+                                                   dplyr::group_by(case, date_time) %>%
+                                                   dplyr::summarise(dispatch_into_nodes = sum(mean_dispatch_into_node)) %>%
+                                                   dplyr::group_by(case) %>%
+                                                   dplyr::summarise(mean_dispatch = mean(dispatch_into_nodes))
 
 top_trans_lim = max(trans_outputs_summary$mean_dispatch, na.rm = TRUE)/1e9
 
 trans_plot = 
   ggplot() +
   geom_bar(data = trans_outputs_summary,
-           aes(x = case, y = mean_dispatch/1e9, fill = Tech), 
+           aes(x = case, y = mean_dispatch/1e9),
+           fill = c(as.character(my_colors$value[my_colors$color == 'black'])),
            col = 'transparent',
            stat="identity", 
            width = 0.75,
            size = 0.25) +
-  scale_fill_manual(values = c(as.character(my_colors$value[my_colors$color == 'black']))) +
   theme_bw() +
   theme(legend.position = '') +
   labs(title = 'Inter-region Transmissoin',
@@ -160,7 +164,7 @@ gen_costs = merge(merge(tech_costs_parameters %>% dplyr::filter(Tech %in% c('win
                   all = TRUE) %>%
   dplyr::mutate(yearly_cost = as.numeric(capacity) * as.numeric(fixed_cost) * 
                               as.numeric(num_time_periods) * as.numeric(delta_t)) %>%
-  dplyr::select(case, Tech, yearly_cost)
+  dplyr::select(case, node, Tech, yearly_cost)
 
 # compute the costs of storage
 stor_costs = merge(merge(tech_costs_parameters %>% dplyr::filter(Tech %in% c('storage')) %>%
@@ -173,9 +177,15 @@ stor_costs = merge(merge(tech_costs_parameters %>% dplyr::filter(Tech %in% c('st
                   all = TRUE) %>%
   dplyr::mutate(yearly_cost = as.numeric(capacity) * as.numeric(fixed_cost) * 
                               as.numeric(num_time_periods) * as.numeric(delta_t)) %>%
-  dplyr::select(case, Tech, yearly_cost)
+  dplyr::select(case, node, Tech, yearly_cost)
 
 # compute the costs of the transmission
+# extract the transmission capacities
+source('R/extract-transmission-capacity.R')
+trans_outputs = 
+  extract_trans_capacity(year,
+                         gg_output_file) %>% dplyr::filter(case == 'Global grid') 
+
 trans_costs = merge(merge(tech_costs_parameters %>% dplyr::filter(Tech %in% c('transmission')),
                    trans_outputs,
                    by = c('Tech','Node_A','Node_B','case'),
@@ -201,7 +211,7 @@ lost_loads_costs = merge(merge(tech_costs_parameters %>% dplyr::filter(Tech %in%
                          by = c('case'),
                          all = TRUE) %>%
     dplyr::mutate(yearly_cost = as.numeric(total_dispatch) * as.numeric(var_cost) * as.numeric(delta_t)) %>%
-    dplyr::select(case, Tech, yearly_cost)
+    dplyr::select(case, node, Tech, yearly_cost)
 
 
 # combine costs and plot
@@ -263,6 +273,128 @@ ggdraw() +
          device = 'pdf',
          width = 13,
          height = 7)
+
+
+# now make the accompanying tables
+# costs by node
+costs_by_node = all_costs %>% dplyr::mutate(node = ifelse(is.na(node), 'trans', node)) %>%
+                              dplyr::group_by(case, node) %>%
+                              dplyr::summarise(yearly_cost = sum(yearly_cost)) %>%
+                              dplyr::filter(!is.na(yearly_cost))
+
+
+# compute mean unmet demand
+# compute the "cost" of the lost load
+lost_load_mean = merge(time_parameters,
+                       curtailment_lostload_outputs %>% dplyr::filter(Tech %in% c('lost_load')),
+                               by = c('case'),
+                               all = TRUE) %>%
+  dplyr::mutate(mean_unmet_demand = as.numeric(total_dispatch) / as.numeric(num_time_periods) / as.numeric(delta_t)) %>%
+  dplyr::select(case, node, Tech, mean_unmet_demand)
+
+# mean gen, storage, lost load, curtailed, and trans
+bahavior_by_node = 
+generation_outputs %>% dplyr::select(case, node, Tech, mean_generation) %>% 
+                       data.table() %>% 
+                       dcast(formula = case + node ~ Tech, 
+                             value.var = 'mean_generation') %>%
+merge(
+storage_outputs %>% dplyr::select(case, node, Tech, mean_stored) %>% 
+    data.table() %>% 
+    dcast(formula = case + node ~ Tech, 
+          value.var = 'mean_stored'),
+by = c('case', 'node'),
+all = TRUE
+) %>%
+merge(
+  lost_load_mean %>% dplyr::select(case, node, Tech, mean_unmet_demand) %>% 
+                                 data.table() %>% 
+                                 dcast(formula = case + node ~ Tech, 
+                                       value.var = 'mean_unmet_demand'),
+by = c('case', 'node'),
+all = TRUE
+)
+
+load(file = 'data/SREX_regions.RData')
+SREX_regions_label = SREX_regions %>% dplyr::mutate(region_label = paste0(LAB,' (', SREX_id, ')')) %>%
+  dplyr::select(SREX_id, region_label) %>%
+  dplyr::mutate(SREX_id = as.character(SREX_id)) %>% 
+  unique()
+
+bahavior_by_node_table = bahavior_by_node %>% merge(SREX_regions_label,
+                                                    by.x = 'node',
+                                                    by.y = 'SREX_id',
+                                                    all = TRUE) %>%
+                                              merge(costs_by_node,
+                                                    by = c('case','node'),
+                                                    all = TRUE) %>%
+  dplyr::mutate(wind_GW = wind/1e6,
+                solar_GW = solar/1e6,
+                storage_GWh = storage/1e6,
+                lost_load_MW = lost_load/1e3,
+                yearly_cost_bil = yearly_cost/1e9,
+                region_label = ifelse(is.na(region_label), 'Transmission', region_label)) %>%
+  dplyr::select(case, region_label, yearly_cost_bil, wind_GW, solar_GW, storage_GWh, lost_load_MW,) %>%
+  dplyr::arrange(desc(yearly_cost_bil))
+
+global_table_totals = data.table(region_label = 'Total',
+                                 t(colSums(bahavior_by_node_table[bahavior_by_node_table$case == 'Global grid',-c(1:2)],  na.rm = TRUE)))
+
+regional_table_totals = data.table(region_label = 'Total',
+                                   t(colSums(bahavior_by_node_table[bahavior_by_node_table$case == 'Regional grids',-c(1:2)],  na.rm = TRUE)))
+
+
+global_grid_table_data = bind_rows(bahavior_by_node_table %>% dplyr::filter(case == 'Global grid'),
+                                   global_table_totals) %>%
+  dplyr::mutate(across(where(is.numeric), round, 0)) %>%
+  tidyr::replace_na(list(storage_GWh = '-',
+                         wind_GW = '-',
+                         solar_GW = '-',
+                         lost_load_MW = '-')) %>%
+  dplyr::select(-case)
+
+
+global_grid_table_data %>% gt(auto_align = 'auto') %>%
+  cols_label(region_label = md('Region'),
+             wind_GW = md('Mean wind  \n generation (GW)'),
+             solar_GW = md('Mean solar  \n generation (GW)'),
+             storage_GWh = md('Mean \n stored (GWh)'),
+             lost_load_MW = md('Mean unmet \n demand (MW)'),
+             yearly_cost_bil = md('Yearly cost  \n (billion $)')) %>%
+  cols_width(everything() ~ px(160)) %>%
+  tab_style(style = list(cell_fill(color = "lightgray")),
+            locations = cells_body(rows = region_label == 'Total')) %>%
+  opt_table_font(font = list(google_font(name = "Spectral"))) %>%
+  tab_options(table.font.size = px(25)) %>%
+  gtsave(filename = paste0('table_cost_capacity_global_grid_', year,'.png'),
+         path = 'figs/')
+
+
+regional_grids_table_data = bind_rows(bahavior_by_node_table %>% dplyr::filter(case == 'Regional grids'),
+                                      regional_table_totals) %>%
+  dplyr::mutate(across(where(is.numeric), round, 0)) %>%
+  tidyr::replace_na(list(storage_GWh = '-',
+                         wind_GW = '-',
+                         solar_GW = '-',
+                         lost_load_MW = '-')) %>%
+  dplyr::select(-case)
+
+
+regional_grids_table_data %>% gt(auto_align = 'auto') %>%
+  cols_label(region_label = md('Region'),
+             wind_GW = md('Mean wind  \n generation (GW)'),
+             solar_GW = md('Mean solar  \n generation (GW)'),
+             storage_GWh = md('Mean \n stored (GWh)'),
+             lost_load_MW = md('Mean unmet \n demand (MW)'),
+             yearly_cost_bil = md('Yearly cost  \n (billion $)')) %>%
+  cols_width(everything() ~ px(160)) %>%
+  tab_style(style = list(cell_fill(color = "lightgray")),
+            locations = cells_body(rows = region_label == 'Total')) %>%
+  opt_table_font(font = list(google_font(name = "Spectral"))) %>%
+  tab_options(table.font.size = px(25)) %>%
+  gtsave(filename = paste0('table_cost_capacity_regional_grids_', year,'.png'),
+         path = 'figs/')
+
 
 rm(list = ls())
 }

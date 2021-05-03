@@ -51,9 +51,10 @@ plot_tail_dep_capacities = function(
       dplyr::select(-demand)
     
     
-    CF_agg_demand_long = CF_agg_demand %>% reshape2::melt(id.vars = c('srex','year', 'month', 'day', 'hour', 'agg_demand'),
-                                                          variable.name = 'Tech',
-                                                          value.name = "Capacity") %>%
+    CF_agg_demand_long = CF_agg_demand %>% data.table() %>%
+                                           melt(id.vars = c('srex','year', 'month', 'day', 'hour', 'agg_demand'),
+                                                variable.name = 'Tech',
+                                                value.name = "Capacity") %>%
                                            dplyr::mutate(Tech = sub(x = Tech, pattern = '_capacity', replacement = ''))
     
     
@@ -102,8 +103,9 @@ capacities_and_tdeps = merge(wind_solar_capacities,
                              CF_agg_demand_long_tdep,
                              by = c('Tech','srex'))    
     
-capacities_and_tdeps_long = capacities_and_tdeps %>% reshape2::melt(id.vars = c('Tech', 'srex', 'Capacity'),
-                                                                    variable.name = 'tail_dep_type') %>%
+capacities_and_tdeps_long = capacities_and_tdeps %>% data.table() %>%
+                                                     melt(id.vars = c('Tech', 'srex', 'Capacity'),
+                                                          variable.name = 'tail_dep_type') %>%
   dplyr::mutate(tail_dep_type = sub(x = tail_dep_type,
                                     pattern = 'tail_dep_',
                                     replacement = '')) %>%

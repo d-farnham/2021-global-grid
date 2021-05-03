@@ -26,3 +26,5 @@ SREX_region_nodes_manual = merge(region_centroid_manual,
 SREX_region_nodes_manual = SREX_region_nodes_manual %>% dplyr::mutate(region_label = paste0(LAB,'(', SREX_id, ')'))
 
 save(SREX_region_nodes_manual, file = 'data/SREX_region_nodes_manual.RData')
+
+rm(list = ls())

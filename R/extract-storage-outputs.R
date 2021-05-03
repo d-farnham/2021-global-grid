@@ -1,5 +1,5 @@
 extract_storage_outputs = function(year = 2018,
-                                   gg_output_file = 'connected_five_storage_trans_var_cost/global_grid_',
+                                   gg_output_file = 'connected_five_storage/global_grid_',
                                    rg_output_file = 'separate_part_'){
   
 # let's load the results from the globally connected grid
@@ -16,9 +16,10 @@ mean_stored = read_excel(path = output_path,
           dplyr::select(contains('storage')) %>%
           dplyr::select(contains('stored')) %>%
           dplyr::mutate(time_index = 1:n()) %>%
-          reshape2::melt(id.vars = 'time_index',
-                         variable.name = 'Name',
-                         value.name = 'storage') %>%
+          data.table() %>%
+          melt(id.vars = 'time_index',
+               variable.name = 'Name',
+               value.name = 'storage') %>%
           tidyr::separate(Name, c('X', 'node', 'storage stored'), "_") %>%
           dplyr::mutate(Tech = 'storage') %>%
           dplyr::select(time_index, node, Tech, storage) %>%
@@ -64,9 +65,10 @@ for(ii in 1:length(output_paths)){
     dplyr::select(contains('storage')) %>%
     dplyr::select(contains('stored')) %>%
     dplyr::mutate(time_index = 1:n()) %>%
-    reshape2::melt(id.vars = 'time_index',
-                   variable.name = 'Name',
-                   value.name = 'storage') %>%
+    data.table() %>%
+    melt(id.vars = 'time_index',
+         variable.name = 'Name',
+         value.name = 'storage') %>%
     tidyr::separate(Name, c('X', 'node', 'storage stored'), "_") %>%
     dplyr::mutate(Tech = 'storage') %>%
     dplyr::select(time_index, node, Tech, storage) %>%

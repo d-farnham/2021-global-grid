@@ -92,14 +92,16 @@ srex_demands = merge(srex_demands0,
 
 
 
-dist_to_regions_capacities_long = dist_to_regions_capacities %>% reshape2::melt(id.vars = c('srex', 'Tech', 'Capacity'),
-                                                                                value.name = 'dist')
+dist_to_regions_capacities_long = dist_to_regions_capacities %>% data.table() %>% 
+                                                                 melt(id.vars = c('srex', 'Tech', 'Capacity'),
+                                                                      value.name = 'dist')
 
 dist_to_regions_capacities_long = dist_to_regions_capacities_long %>% dplyr::mutate(srex_dist = sub(x = variable,
                                                                                                     pattern = 'dist_to_',
                                                                                                     replacement = ''))
 
-grid_locs_caps_dist_plot_data = merge(dist_to_regions_capacities_long %>% reshape2::melt(,id.vars = c('srex', 'srex_dist', 'Tech', 'Capacity', 'dist')),
+grid_locs_caps_dist_plot_data = merge(dist_to_regions_capacities_long %>% data.table() %>%
+                                                                          melt(id.vars = c('srex', 'srex_dist', 'Tech', 'Capacity', 'dist')),
                                       srex_demands,
                                       by.x = 'srex_dist',
                                       by.y = 'srex_name') %>%

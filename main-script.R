@@ -5,7 +5,8 @@
 rm(list = ls())
 package.list = list('dplyr', 'plyr', 'rgdal', 'ggplot2', 'maptools', 'rgeos', 'cowplot', 
                     'readr', 'gt', 'lubridate', 'readxl', 'tidyr', 'data.table', 'stringr',
-                    'tibble', 'igraph', 'ggrepel')
+                    'tibble', 'igraph', 'ggrepel','webshot','mapproj', 'extRemes', 'geosphere',
+                    'vecsets')
 source('R/load-packages.R') # load packages
 webshot::install_phantomjs()
 
@@ -113,7 +114,7 @@ for(ppart in 1:6){
 source('R/find-top-n-demand-regions.R')
 top_five_demand_regions =
   find_top_n_demand_regions(
-    n_sites = 10,
+    n_sites = 5,
     demand_file = 'data/SREX_demand_weightings.csv')
 
 source('R/case-input-setup-connected-global-grid.R')
@@ -139,6 +140,7 @@ for(yyear in 2016:2018){
     wind_fixed_cost = MEM_inputs$capacity_fixed_cost_per_kW[MEM_inputs$Tech == 'Wind'],
     storage_fixed_cost = MEM_inputs$capacity_fixed_cost_per_kWh[MEM_inputs$Tech == 'Storage'],
     lost_load_var_cost = 10,
+    trans_var_cost = 1e-6,
     line_loss = MEM_inputs$loss_percent_per_km[MEM_inputs$Tech == 'Trans line (land)'] / 100,
     converter_pair_loss = MEM_inputs$loss_percent[MEM_inputs$Tech == 'Trans converter pair'] / 100,
     line_cost_land = MEM_inputs$capacity_fixed_cost_per_kW_per_km[MEM_inputs$Tech == 'Trans line (land)'],
@@ -244,6 +246,7 @@ for(yyear in 2016:2018){
     wind_fixed_cost = MEM_inputs$capacity_fixed_cost_per_kW[MEM_inputs$Tech == 'Wind'],
     storage_fixed_cost = MEM_inputs$capacity_fixed_cost_per_kWh[MEM_inputs$Tech == 'Storage (1/10th cap cost)'],
     lost_load_var_cost = 10,
+    trans_var_cost = 1e-6,
     line_loss = MEM_inputs$loss_percent_per_km[MEM_inputs$Tech == 'Trans line (land)'] / 100,
     converter_pair_loss = MEM_inputs$loss_percent[MEM_inputs$Tech == 'Trans converter pair'] / 100,
     line_cost_land = MEM_inputs$capacity_fixed_cost_per_kW_per_km[MEM_inputs$Tech == 'Trans line (land)'],
@@ -304,6 +307,7 @@ for(yyear in 2016:2018){
     wind_fixed_cost = MEM_inputs$capacity_fixed_cost_per_kW[MEM_inputs$Tech == 'Wind'],
     storage_fixed_cost = MEM_inputs$capacity_fixed_cost_per_kWh[MEM_inputs$Tech == 'Storage ($100 per kWh)'],
     lost_load_var_cost = 10,
+    trans_var_cost = 1e-6,
     line_loss = MEM_inputs$loss_percent_per_km[MEM_inputs$Tech == 'Trans line (land)'] / 100,
     converter_pair_loss = MEM_inputs$loss_percent[MEM_inputs$Tech == 'Trans converter pair'] / 100,
     line_cost_land = MEM_inputs$capacity_fixed_cost_per_kW_per_km[MEM_inputs$Tech == 'Trans line (land)'],
@@ -361,6 +365,7 @@ for(yyear in 2016:2018){
     wind_fixed_cost = MEM_inputs$capacity_fixed_cost_per_kW[MEM_inputs$Tech == 'Wind'],
     storage_fixed_cost = MEM_inputs$capacity_fixed_cost_per_kWh[MEM_inputs$Tech == 'Storage'],
     lost_load_var_cost = 10,
+    trans_var_cost = 1e-6,
     line_loss = MEM_inputs$loss_percent_per_km[MEM_inputs$Tech == 'Trans line (land)'] / 100,
     converter_pair_loss = MEM_inputs$loss_percent[MEM_inputs$Tech == 'Trans converter pair'] / 100,
     line_cost_land = MEM_inputs$capacity_fixed_cost_per_kW_per_km[MEM_inputs$Tech == 'Trans line (land)'],
@@ -420,6 +425,7 @@ for(yyear in 2016:2018){
     wind_fixed_cost = MEM_inputs$capacity_fixed_cost_per_kW[MEM_inputs$Tech == 'Wind'],
     storage_fixed_cost = MEM_inputs$capacity_fixed_cost_per_kWh[MEM_inputs$Tech == 'Storage'],
     lost_load_var_cost = 10,
+    trans_var_cost = 1e-6,
     line_loss = MEM_inputs$loss_percent_per_km[MEM_inputs$Tech == 'Trans line (land)'] / 100,
     converter_pair_loss = MEM_inputs$loss_percent[MEM_inputs$Tech == 'Trans converter pair'] / 100,
     line_cost_land = MEM_inputs$capacity_fixed_cost_per_kW_per_km[MEM_inputs$Tech == 'Trans line (land)'],
@@ -445,7 +451,6 @@ system("sh run_MEM_for_global_grid_batch_2.sh")
 
 setwd('~/Google Drive/2021-global-grid')
 
-
 ###########################################################
 ### Part 7: Process and plot Macro Energy Model outputs ###
 ###########################################################
@@ -468,7 +473,6 @@ plot_cost_capacity(year = 2016,
                    gg_output_file = 'connected_five_storage/global_grid_',
                    rg_output_file = 'separate_part_')
 
-# !!! ADD BACK IN THE TABLES ABOVE!
 
 # Plot the capacities and import (Figure 3)
 source('R/plot-gen-capacity-import.R')
@@ -481,10 +485,7 @@ plot_wind_solar_capacity_import(year = 2017,
 plot_wind_solar_capacity_import(year = 2016,
                                 gg_output_file = "connected_five_storage/global_grid_")
 
-
-# plot the mean transmission and import/export during various UTC times for a week in June vs. a week in December (Figure 4)
-# !!! NEED TO a) REMOVE LABELS, 
-# !!! e) add panel letter labels
+# plot the mean transmission and import/export during various UTC times for a week in June vs. a week in December (figure for SI)
 source('R/plot-power-flows.R')
 plot_power_flows(year = 2018,
                  gg_output_file = 'connected_five_storage/global_grid_',
@@ -511,8 +512,8 @@ plot_power_flows(year = 2016,
                  date_b = as.POSIXct('2016-06-21', tz = 'UTC'))
 
 
-# plot the costs of alternative scenarios (Figure 5)
-source('R/plot-costs-alternative-scenarios.R')
+# plot the costs of alternative scenarios (Figure 4)
+source('R/plot-costs-alternative-scenarios-TESTING.R')
 plot_costs_alternative_scenarios(
   years = c(2016:2018),
   global_grid_run_ID = 'connected_five_storage',
@@ -559,4 +560,123 @@ plot_dist_to_regions_capacities(proposed_grid = 'data/proposed_grid_coords.RData
                                 global_grid_run_ID = 'connected_five_storage')
 
 rm(list = ls())
+###########################################################
+## Part 8: Prepare other Macro Energy Model input sheets ##
+###########################################################
 
+# For the SI: How many storage's are needed to 
+#             approximate total system cost
+system("mkdir MEM/case_inputs/assess_how_many_storage")
+
+load(file = 'data/MEM_inputs.RData')
+
+source('R/find-top-n-demand-regions.R')
+top_10_demand_regions =
+  find_top_n_demand_regions(
+    n_sites = 10,
+    demand_file = 'data/SREX_demand_weightings.csv')
+
+source('R/case-input-setup-connected-global-grid.R')
+
+for(num_stor in c(2:4,6:8)){
+  for(yyear in 2016:2018){
+    MEM_case_input_setup_connected_global_grid(
+      year = yyear,
+      delta_t = 3,
+      save_file_name = paste0('MEM/case_inputs/assess_how_many_storage/global_grid_connected_',
+                              num_stor,'_storage_',yyear,'.csv'),
+      data_path = 'Input_Data',
+      output_path = paste0('Output_Data/global_grid/assess_how_many_storage/connected_',num_stor,'_storage'),
+      demand_regions = 1:26,
+      wind_regions = 1:26,
+      solar_regions = 1:26,
+      curtailment_regions = 1:26,
+      lost_load_regions = 1:26,
+      storage_regions = top_10_demand_regions$top_demand[1:num_stor],
+      storage_efficiency = MEM_inputs$efficiency[MEM_inputs$Tech == 'Storage'] / 100,
+      storage_decay_rate = MEM_inputs$decay_rate[MEM_inputs$Tech == 'Storage'],
+      storage_charging_time = MEM_inputs$charge_time[MEM_inputs$Tech == 'Storage'],
+      solar_fixed_cost = MEM_inputs$capacity_fixed_cost_per_kW[MEM_inputs$Tech == 'Solar'],
+      wind_fixed_cost = MEM_inputs$capacity_fixed_cost_per_kW[MEM_inputs$Tech == 'Wind'],
+      storage_fixed_cost = MEM_inputs$capacity_fixed_cost_per_kWh[MEM_inputs$Tech == 'Storage'],
+      lost_load_var_cost = 10,
+      trans_var_cost = 1e-6,
+      line_loss = MEM_inputs$loss_percent_per_km[MEM_inputs$Tech == 'Trans line (land)'] / 100,
+      converter_pair_loss = MEM_inputs$loss_percent[MEM_inputs$Tech == 'Trans converter pair'] / 100,
+      line_cost_land = MEM_inputs$capacity_fixed_cost_per_kW_per_km[MEM_inputs$Tech == 'Trans line (land)'],
+      line_cost_sea = MEM_inputs$capacity_fixed_cost_per_kW_per_km[MEM_inputs$Tech == 'Trans line (sea)'],
+      converter_pair_cost = MEM_inputs$capacity_fixed_cost_per_kW[MEM_inputs$Tech == 'Trans converter pair']
+    )
+  }
+}
+
+
+# For the SI: Is using the largest 5 demand regions as
+#             for storage lead to a near minimum 
+#             approximate total system cost?
+system("mkdir MEM/case_inputs/assess_which_storage")
+
+
+
+source('R/case-input-setup-connected-global-grid.R')
+
+set.seed(123)
+for(rand_storage in 1:10){
+  
+  five_storage_regions = sample(x = 1:26, replace = FALSE, size = 5)
+  
+  for(yyear in 2016:2018){
+    MEM_case_input_setup_connected_global_grid(
+      year = yyear,
+      delta_t = 3,
+      save_file_name = paste0('MEM/case_inputs/assess_which_storage/global_grid_connected_five_random_storage_iter_',
+                              rand_storage,'_',yyear,'.csv'),
+      data_path = 'Input_Data',
+      output_path = paste0('Output_Data/global_grid/assess_which_storage/connected_five_random_storage_iter_',
+                           rand_storage),
+      demand_regions = 1:26,
+      wind_regions = 1:26,
+      solar_regions = 1:26,
+      curtailment_regions = 1:26,
+      lost_load_regions = 1:26,
+      storage_regions = five_storage_regions,
+      storage_efficiency = MEM_inputs$efficiency[MEM_inputs$Tech == 'Storage'] / 100,
+      storage_decay_rate = MEM_inputs$decay_rate[MEM_inputs$Tech == 'Storage'],
+      storage_charging_time = MEM_inputs$charge_time[MEM_inputs$Tech == 'Storage'],
+      solar_fixed_cost = MEM_inputs$capacity_fixed_cost_per_kW[MEM_inputs$Tech == 'Solar'],
+      wind_fixed_cost = MEM_inputs$capacity_fixed_cost_per_kW[MEM_inputs$Tech == 'Wind'],
+      storage_fixed_cost = MEM_inputs$capacity_fixed_cost_per_kWh[MEM_inputs$Tech == 'Storage'],
+      lost_load_var_cost = 10,
+      trans_var_cost = 1e-6,
+      line_loss = MEM_inputs$loss_percent_per_km[MEM_inputs$Tech == 'Trans line (land)'] / 100,
+      converter_pair_loss = MEM_inputs$loss_percent[MEM_inputs$Tech == 'Trans converter pair'] / 100,
+      line_cost_land = MEM_inputs$capacity_fixed_cost_per_kW_per_km[MEM_inputs$Tech == 'Trans line (land)'],
+      line_cost_sea = MEM_inputs$capacity_fixed_cost_per_kW_per_km[MEM_inputs$Tech == 'Trans line (sea)'],
+      converter_pair_cost = MEM_inputs$capacity_fixed_cost_per_kW[MEM_inputs$Tech == 'Trans converter pair']
+    )
+  }
+}
+
+rm(list = ls())
+###########################################################
+#### Part 9: Solve additional Macro Energy Model cases ####
+###########################################################
+setwd('MEM')
+
+# make sure we are using the correct version of python
+Sys.setenv(PATH = paste("/anaconda3/bin", Sys.getenv("PATH"), sep=":"))
+
+# run the global grid
+system("sh run_MEM_for_global_grid_batch_3.sh")
+
+setwd('~/Google Drive/2021-global-grid')
+
+###########################################################
+###### Part 10: Process and plot SI figs re: storage ######
+###########################################################
+# Plot figures that support our use of the five storages
+source('R/plot-which-and-how-many-storage.R')
+plot_which_and_how_many_storage(years = c(2016:2018),
+                                gg_output_file = 'connected_five_storage/global_grid_')
+
+rm(list = ls())

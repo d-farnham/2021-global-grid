@@ -7,7 +7,6 @@ dist_calc = merge(proposed_grid_coords[c(seq(1, nrow(proposed_grid_coords)-1, by
                   by = 'wire_IDs')
 
 # find the distance of these wires
-library(geosphere)
 
 for(ii in 1:nrow(dist_calc)){
   dist_calc$dist[ii] = distGeo(c(dist_calc$center_lon.x[ii], dist_calc$center_lat.x[ii]), c(dist_calc$center_lon.y[ii], dist_calc$center_lat.y[ii]))/1000
@@ -26,24 +25,13 @@ trans_case_inputs = dist_calc %>% dplyr::mutate(tech_name = paste0('node_', SREX
 # let's estimate the fraction of land for each wire
 
 lat_lon_wires = dist_calc %>% dplyr::select(wire_IDs, center_lon.x, center_lat.x, center_lon.y, center_lat.y)
-library(dplyr)
-library(ggmap)
-library(geosphere)
-library(leaflet)
-library(ggplot2)
-library(scales)
-library(extrafont)
 
 lat_lon_wires = lat_lon_wires %>% dplyr::mutate(fraction_land = NA)
 for(ii in 1:nrow(lat_lon_wires)){
-  #Starting places
+  # Starting places
   p1 = lat_lon_wires[ii,] %>% dplyr::select(center_lon.x, center_lat.x)
   p2 = lat_lon_wires[ii,] %>% dplyr::select(center_lon.y, center_lat.y)
-  
-  # #Midpoint of p1 and p2
-  # p15 = midPoint(p1, p2)
-  # 
-  # p125 = midPoint(p1, p15)
+
   
   intermediate_points = gcIntermediate(p1, p2, n = 100)
   

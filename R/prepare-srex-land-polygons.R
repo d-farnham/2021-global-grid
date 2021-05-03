@@ -13,7 +13,7 @@ for(rregion in unique(SREX_regions$LAB)){
   sps = SpatialPolygons(list(ps))
   
   
-  # find the intersecting area between teh world land map and the srex regions
+  # find the intersecting area between the world land map and the srex regions
   srex_polys_land0 <- gIntersection(sps,
                                      wrld_simpl, 
                                      byid=FALSE)  %>% 

@@ -40,13 +40,13 @@ word_numbers <- c("one", "two", "three", "four", "five", "six", "seven", "eight"
 
 wind_CF0 = read_csv(file = paste0('MEM/Input_Data/',word_numbers[hour_multiple],'_hour_wind_srex',ssrex,'.csv'),
                     skip = 1) %>%
-           dplyr::mutate(srex = ssrex) %>%
+           dplyr::mutate(srex = as.character(ssrex)) %>%
            dplyr::filter(year == yyear)
 
 
 solar_CF0 = read_csv(file = paste0('MEM/Input_Data/',word_numbers[hour_multiple],'_hour_solar_srex',ssrex,'.csv'),
                     skip = 1) %>%
-            dplyr::mutate(srex = ssrex) %>%
+            dplyr::mutate(srex = as.character(ssrex)) %>%
             dplyr::filter(year == yyear)
 
 
@@ -60,9 +60,10 @@ if(ssrex > 1){CF = bind_rows(CF, CF0)}
 
 rm(wind_CF0, solar_CF0, CF0)
 
-CF_long = CF %>% reshape2::melt(id.vars = c('year', 'month', 'day', 'hour', 'srex'),
-                                variable.name = 'Tech',
-                                value.name = 'CF') %>%
+CF_long = CF %>% data.table() %>%
+                 melt(id.vars = c('year', 'month', 'day', 'hour', 'srex'),
+                      variable.name = 'Tech',
+                      value.name = 'CF') %>%
                  dplyr::mutate(Tech = sub(x = Tech, pattern = '_capacity', replacement = ''))
 
 

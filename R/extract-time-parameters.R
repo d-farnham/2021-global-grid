@@ -1,5 +1,5 @@
 extract_time_parameters = function(year = 2018,
-                                   gg_output_file = 'connected_five_storage_trans_var_cost/global_grid_',
+                                   gg_output_file = 'connected_five_storage/global_grid_',
                                    rg_output_file = 'separate_part_'){
   
 # let's load the results from the globally connected grid

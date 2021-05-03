@@ -17,6 +17,7 @@ solar_fixed_cost,
 wind_fixed_cost,
 storage_fixed_cost,
 lost_load_var_cost,
+trans_var_cost,
 line_loss,
 converter_pair_loss,
 line_cost_land,
@@ -160,6 +161,7 @@ trans_case_inputs = compute_trans_lengths_fraction_land(proposed_grid = 'data/pr
                                   X2 = tech_type,
                                   X3 = node_from,
                                   X4 = node_to,
+                                  X9 = as.character(trans_var_cost),
                                   X13 = as.character(length),
                                   X14 = as.character(fraction_land),
                                   X15 = as.character(line_loss),
@@ -167,7 +169,7 @@ trans_case_inputs = compute_trans_lengths_fraction_land(proposed_grid = 'data/pr
                                   X17 = as.character(line_cost_land),
                                   X18 = as.character(line_cost_sea),
                                   X19 = as.character(converter_pair_cost)) %>%
-                    dplyr::select(X1, X2, X3, X4, X13, X14, X15, X16, X17, X18, X19)
+                    dplyr::select(X1, X2, X3, X4, X9, X13, X14, X15, X16, X17, X18, X19)
 
 
 
