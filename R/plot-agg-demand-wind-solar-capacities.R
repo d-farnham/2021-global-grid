@@ -88,18 +88,18 @@ solar_wind_agg_demand_cors_plot[[ii]] =
       ggplot() +
       geom_point(data = capacities_and_cors %>% dplyr::filter(Tech == 'solar'),
                  aes(`solar-aggregate global demand`, Capacity/1e6, col = Tech),
-                 size = 4,
+                 size = 1.5,
                  alpha = 0.75) +
   geom_point(data = capacities_and_cors %>% dplyr::filter(Tech == 'wind'),
              aes(`wind-aggregate global demand`, Capacity/1e6, col = Tech),
-             size = 4,
+             size = 1.5,
              alpha = 0.75) +
       scale_color_manual(name = 'Generation type',
                          values = c('#f16913', '#238b45')) +
       labs(title = paste0(letters[ii],') ', yyear),
            x = 'Correlation with aggregate demand',
            y = ' Installed Capacity (GW)') +
-      theme_classic()
+      theme_bw()
 
 
 solar_wind_demand_cors_plot[[ii]] = 
@@ -117,7 +117,7 @@ solar_wind_demand_cors_plot[[ii]] =
   labs(title = paste0(letters[ii],') ', yyear),
        x = 'Correlation with regional demand',
        y = ' Installed Capacity / mean regional demand') +
-  theme_classic()
+  theme_bw()
     
   }
   
@@ -128,8 +128,8 @@ ggdraw() +
     draw_plot(solar_wind_agg_demand_cors_plot[[3]], x = 0, y = 0, width = 1, height = 1/3) +
     ggsave(filename = 'figs/figure_solar_wind_agg_demand_cors_vs_gen.pdf',
            device = 'pdf',
-           width = 8,
-           height = 15)
+           width = 4,
+           height = 7.5)
   
   
 ggdraw() +

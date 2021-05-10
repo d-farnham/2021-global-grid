@@ -83,7 +83,7 @@ plot_data = merge(CF_installed_cap_by_srex,
 
 solar_wind_box_plot[[ii]] = 
   ggplot(plot_data) +
-  geom_boxplot(aes(x = LAB, y = CF * 100, fill = Capacity/1e6)) +
+  geom_boxplot(aes(x = LAB, y = CF * 100, fill = Capacity/1e6, col = Tech)) +
   geom_point(data = plot_data %>% dplyr::select(LAB, Tech, CF_mean) %>% unique(),
              aes(x = LAB, y = CF_mean * 100, col = Tech),
              shape = 17,

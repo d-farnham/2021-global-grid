@@ -121,7 +121,7 @@ tail_dep_plot[[ii]] =
       labs(title = paste0(letters[ii],') ', yyear),
            x = 'Tail Dependence with aggregate demand',
            y = ' Installed Capacity (GW)') +
-      theme_classic() +
+      theme_bw() +
       facet_wrap(~tail_dep_type_label)
   }  
   

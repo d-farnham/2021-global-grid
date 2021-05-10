@@ -67,7 +67,7 @@ which_storage_plot =
     labs(title = "",
          x = '',
          y = 'System cost (trillion $ per year)') +  
-    theme_classic() +
+    theme_bw() +
     theme(axis.text.x = element_blank(),
           axis.ticks.x = element_blank()) +
     scale_x_continuous(limits = c(-1,1)) +
@@ -153,7 +153,7 @@ how_many_storage_plot =
             col = 'red') +
   labs(x = 'Number of regions with storage',
        y = 'System cost (trillion $ per year)') +
-  theme_classic() +
+  theme_bw() +
   facet_wrap(~year,
              scales = 'free', 
              ncol = 1)
