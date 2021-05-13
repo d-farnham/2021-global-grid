@@ -67,7 +67,7 @@ system_costs = rbind(system_costs,
                      data.frame(run_ID = exclude_high_gen_regions_global_grid_run_ID,
                                 yearly_cost = yearly_costs$yearly_cost))
 
-# compute and print the cost difference between scenarios
+# compute and print the cost difference for no to 5 wind and solar density region gen
 cost_comparison = system_costs %>% dplyr::filter(run_ID == global_grid_run_ID |
                                                  run_ID == exclude_high_density_regions_global_grid_run_ID) 
 
@@ -81,6 +81,19 @@ print(paste0('The global grid for year ',
              round(percent_dif*100,digits = 0),
              '% more expensive when the top 5 wind and top 5 solar density regions are excluded from generating electricity'))
 
+# compute and print the cost difference for no to 5 wind and solar high gen regions
+cost_comparison = system_costs %>% dplyr::filter(run_ID == global_grid_run_ID |
+                                                   run_ID == exclude_high_gen_regions_global_grid_run_ID) 
+
+percent_dif = (cost_comparison %>% dplyr::filter(run_ID == exclude_high_gen_regions_global_grid_run_ID) %>% dplyr::select(yearly_cost) - 
+                 cost_comparison %>% dplyr::filter(run_ID == global_grid_run_ID) %>% dplyr::select(yearly_cost))/
+  cost_comparison %>% dplyr::filter(run_ID == global_grid_run_ID) %>% dplyr::select(yearly_cost)
+
+print(paste0('The global grid for year ',
+             yyear,
+             ' is about ', 
+             round(percent_dif*100,digits = 0),
+             '% more expensive when the top 5 wind and top 5 solar ggenerating regions from prior optimization are excluded from generating electricity'))
 
 # prepare data for the reduced generating regions plot
 reduced_generating_regions0 = 
