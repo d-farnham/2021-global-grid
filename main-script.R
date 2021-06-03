@@ -149,7 +149,43 @@ for(yyear in 2016:2018){
   )
 }
 
+# (2b) A global grid where the demand is weighted and there are 26 possible solar genreators, 26 wind generators, and 5 batteries
+#      but where we do not allow cross ocean nor cross equator transmission
+
+source('R/case-input-setup-connected-global-grid-no-cross-ocean-cross-equator-trans.R')
+
+for(yyear in 2016:2018){
+  MEM_case_input_setup_connected_global_grid_no_cross_ocean_cross_equator_trans(
+    year = yyear,
+    delta_t = 3,
+    save_file_name = paste0('MEM/case_inputs/global_grid/global_grid_connected_five_storage_no_cross_ocean_cross_equator_trans_lines_',
+                            yyear,'.csv'),
+    data_path = 'Input_Data',
+    output_path = 'Output_Data/global_grid/connected_five_storage_no_cross_ocean_cross_equator_trans_lines',
+    demand_regions = 1:26,
+    wind_regions = 1:26,
+    solar_regions = 1:26,
+    curtailment_regions = 1:26,
+    lost_load_regions = 1:26,
+    storage_regions = top_five_demand_regions$top_demand,
+    storage_efficiency = MEM_inputs$efficiency[MEM_inputs$Tech == 'Storage'] / 100,
+    storage_decay_rate = MEM_inputs$decay_rate[MEM_inputs$Tech == 'Storage'],
+    storage_charging_time = MEM_inputs$charge_time[MEM_inputs$Tech == 'Storage'],
+    solar_fixed_cost = MEM_inputs$capacity_fixed_cost_per_kW[MEM_inputs$Tech == 'Solar'],
+    wind_fixed_cost = MEM_inputs$capacity_fixed_cost_per_kW[MEM_inputs$Tech == 'Wind'],
+    storage_fixed_cost = MEM_inputs$capacity_fixed_cost_per_kWh[MEM_inputs$Tech == 'Storage'],
+    lost_load_var_cost = 10,
+    trans_var_cost = 1e-6,
+    line_loss = MEM_inputs$loss_percent_per_km[MEM_inputs$Tech == 'Trans line (land)'] / 100,
+    converter_pair_loss = MEM_inputs$loss_percent[MEM_inputs$Tech == 'Trans converter pair'] / 100,
+    line_cost_land = MEM_inputs$capacity_fixed_cost_per_kW_per_km[MEM_inputs$Tech == 'Trans line (land)'],
+    line_cost_sea = MEM_inputs$capacity_fixed_cost_per_kW_per_km[MEM_inputs$Tech == 'Trans line (sea)'],
+    converter_pair_cost = MEM_inputs$capacity_fixed_cost_per_kW[MEM_inputs$Tech == 'Trans converter pair']
+  )
+}
+
 rm(list = ls())
+
 
 ###########################################################
 ### Part 4: Solve the prepared Macro Energy Model cases ###
@@ -168,6 +204,9 @@ system('sh run_MEM_for_regional_grids.sh')
 
 # optimize the global grid
 system('sh run_MEM_for_global_grid.sh')
+
+# optimize the global grid w/o cross ocean and cross equator trans lines
+system('sh run_MEM_for_global_grid_no_cross_ocean_cross_equator_trans.sh')
 
 # change thet working directory back out of the MEM directory
 setwd('~/Google Drive/2021-global-grid')
@@ -463,27 +502,34 @@ my_colors = data.frame(color = c('green', 'brown', 'black', 'pink', 'gray', 'ora
 source('R/plot-cost-capacity.R')
 plot_cost_capacity(year = 2018,
                    gg_output_file = 'connected_five_storage/global_grid_',
-                   rg_output_file = 'separate_part_')
+                   rg_output_file = 'separate_part_',
+                   plot_name = 'cost_capacity')
 
 plot_cost_capacity(year = 2017,
                    gg_output_file = 'connected_five_storage/global_grid_',
-                   rg_output_file = 'separate_part_')
+                   rg_output_file = 'separate_part_',
+                   plot_name = 'cost_capacity')
 
 plot_cost_capacity(year = 2016,
                    gg_output_file = 'connected_five_storage/global_grid_',
-                   rg_output_file = 'separate_part_')
+                   rg_output_file = 'separate_part_',
+                   plot_name = 'cost_capacity')
 
 
 # Plot the capacities and import (Figure 3)
 source('R/plot-gen-capacity-import.R')
 plot_wind_solar_capacity_import(year = 2018,
-                                gg_output_file = 'connected_five_storage/global_grid_')
+                                gg_output_file = 'connected_five_storage/global_grid_',
+                                plot_name = 'capacity_import')
 
 plot_wind_solar_capacity_import(year = 2017,
-                                gg_output_file = "connected_five_storage/global_grid_")
+                                gg_output_file = "connected_five_storage/global_grid_",
+                                plot_name = 'capacity_import')
 
 plot_wind_solar_capacity_import(year = 2016,
-                                gg_output_file = "connected_five_storage/global_grid_")
+                                gg_output_file = "connected_five_storage/global_grid_",
+                                plot_name = 'capacity_import')
+
 
 # plot the mean transmission and import/export during various UTC times for a week in June vs. a week in December (figure for SI)
 source('R/plot-power-flows.R')
@@ -524,6 +570,37 @@ plot_costs_alternative_scenarios(
   regional_grids_run_ID = 'separate',
   storage_100_regional_grids_run_ID = 'separate_one_hundred_cost_storage',
   storage_1_10th_regional_grids_run_ID = 'separate_one_tenth_cost_storage')
+
+
+# Plot the cost and capacities for the runs with no cross ocean cross equator trans (SI figures)
+plot_cost_capacity(year = 2018,
+                   gg_output_file = 'connected_five_storage_no_cross_ocean_cross_equator_trans_lines/global_grid_',
+                   rg_output_file = 'separate_part_',
+                   plot_name = 'cost_capacity_no_cross_ocean_cross_equator_trans')
+
+plot_cost_capacity(year = 2017,
+                   gg_output_file = 'connected_five_storage_no_cross_ocean_cross_equator_trans_lines/global_grid_',
+                   rg_output_file = 'separate_part_',
+                   plot_name = 'cost_capacity_no_cross_ocean_cross_equator_trans')
+
+plot_cost_capacity(year = 2016,
+                   gg_output_file = 'connected_five_storage_no_cross_ocean_cross_equator_trans_lines/global_grid_',
+                   rg_output_file = 'separate_part_',
+                   plot_name = 'cost_capacity_no_cross_ocean_cross_equator_trans')
+
+# Plot the capacities and import for the runs with no cross ocean cross equator trans (SI figures)
+source('R/plot-gen-capacity-import-no-import-labels.R')
+plot_wind_solar_capacity_import_no_import_labels(year = 2018,
+                                                 gg_output_file = 'connected_five_storage_no_cross_ocean_cross_equator_trans_lines/global_grid_',
+                                                 plot_name = 'capacity_import_no_cross_ocean_cross_equator_trans')
+
+plot_wind_solar_capacity_import_no_import_labels(year = 2017,
+                                                 gg_output_file = "connected_five_storage_no_cross_ocean_cross_equator_trans_lines/global_grid_",
+                                                 plot_name = 'capacity_import_no_cross_ocean_cross_equator_trans')
+
+plot_wind_solar_capacity_import_no_import_labels(year = 2016,
+                                                 gg_output_file = "connected_five_storage_no_cross_ocean_cross_equator_trans_lines/global_grid_",
+                                                 plot_name = 'capacity_import_no_cross_ocean_cross_equator_trans')
 
 
 # plot the capacity factors and MEM installed capacities (SI figure)

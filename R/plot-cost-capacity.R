@@ -1,6 +1,7 @@
 plot_cost_capacity = function(year,
                               gg_output_file,
-                              rg_output_file){
+                              rg_output_file,
+                              plot_name){
     
 # extract the storage results
 source('R/extract-storage-outputs.R')
@@ -13,7 +14,7 @@ storage_outputs =
 source('R/extract-transmission-dispatch.R')
 trans_dispatch_by_node =
   extract_trans_dispatch(year = year,
-                         gg_output_file = 'connected_five_storage/global_grid_')
+                         gg_output_file)
   
 # extract the wind/solar generation results
 source('R/extract-generation-outputs.R')
@@ -271,7 +272,7 @@ ggdraw() +
   draw_label(label = '(d)', x = 0.725, y = 0.1, size = 20) +
   draw_plot(storage_plot, x = 0.75, y = 0, width = 0.25, height = 0.5) +
   draw_label(label = '(e)', x = 0.975, y = 0.1, size = 20) + 
-  ggsave(filename = paste0('figs/figure_cost_capacity_',year,'.pdf'),
+  ggsave(filename = paste0('figs/figure_',plot_name,'_',year,'.pdf'),
          device = 'pdf',
          width = 13,
          height = 7)
@@ -368,7 +369,7 @@ global_grid_table_data %>% gt(auto_align = 'auto') %>%
             locations = cells_body(rows = region_label == 'Total')) %>%
   opt_table_font(font = list(google_font(name = "Spectral"))) %>%
   tab_options(table.font.size = px(25)) %>%
-  gtsave(filename = paste0('table_cost_capacity_global_grid_', year,'.png'),
+  gtsave(filename = paste0('table_',plot_name,'_global_grid_', year,'.png'),
          path = 'figs/')
 
 
@@ -394,7 +395,7 @@ regional_grids_table_data %>% gt(auto_align = 'auto') %>%
             locations = cells_body(rows = region_label == 'Total')) %>%
   opt_table_font(font = list(google_font(name = "Spectral"))) %>%
   tab_options(table.font.size = px(25)) %>%
-  gtsave(filename = paste0('table_cost_capacity_regional_grids_', year,'.png'),
+  gtsave(filename = paste0('table_',plot_name,'_regional_grids_', year,'.png'),
          path = 'figs/')
 
 

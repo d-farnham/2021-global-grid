@@ -1,6 +1,6 @@
-plot_wind_solar_capacity_import = function(year = 2018,
-                                           gg_output_file = 'connected_five_storage/global_grid_',
-                                           plot_name){
+plot_wind_solar_capacity_import_no_import_labels = function(year = 2018,
+                                                            gg_output_file = 'connected_five_storage/global_grid_',
+                                                            plot_name){
 # let's load the results from the globally connected grid
 output_path = list.files(paste0('MEM/Output_Data/global_grid/',gg_output_file,year),
                          pattern = '.xlsx',
@@ -252,8 +252,6 @@ SREX_in_out_plot =
   geom_rect(data=world_outline, 
             aes(xmin=xmin, xmax=xmax, ymin=ymin, ymax=ymax), 
             color='gray', fill="transparent", size=1.5) +
-  geom_label(aes(x = -193, y = 30, label = 'Net \n importer'), col = '#de2d26', fill = 'white') +
-  geom_label(aes(x = -177, y = 6, label = 'Net \n exporter'), col = '#3182bd', fill = 'white') +
   theme_classic() +
   theme(axis.text = element_blank(),
         axis.ticks = element_blank(),
